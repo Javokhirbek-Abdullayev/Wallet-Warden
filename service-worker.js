@@ -1,10 +1,12 @@
-const CACHE_NAME = "wallet-warden-cache-v1";
+const CACHE_NAME = "wallet-warden-cache-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./manifest.webmanifest"
+  "./manifest.webmanifest",
+  "./icon-192.svg",
+  "./icon-512.svg"
 ];
 
 self.addEventListener("install", (event) => {
@@ -33,4 +35,14 @@ self.addEventListener("fetch", (event) => {
       });
     })
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "show-notification") {
+    self.registration.showNotification("Wallet Warden", {
+      body: event.data.body || "Don't forget to log today's spending, Warden is watching 🦉",
+      icon: "./icon-192.svg",
+      badge: "./icon-192.svg"
+    });
+  }
 });

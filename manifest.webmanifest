@@ -1,10 +1,23 @@
 {
   "name": "Wallet Warden",
-  "short_name": "WalletWarden",
-  "description": "Offline-first daily allowance app for students.",
+  "short_name": "Warden",
+  "description": "Your daily allowance guardian.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#121212",
-  "icons": []
+  "background_color": "#0F0F1A",
+  "theme_color": "#6C63FF",
+  "icons": [
+    {
+      "src": "./icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

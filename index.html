@@ -3,217 +3,203 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#6C63FF">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Wallet Warden">
   <title>Wallet Warden</title>
+  <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+  <link rel="apple-touch-icon" href="icon-192.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ["Inter", "system-ui", "sans-serif"]
-          },
-          colors: {
-            charcoal: "#121212",
-            panel: "#1d1d1f",
-            mint: "#61f4c5",
-            coral: "#ff7f7f"
-          }
-        }
-      }
-    };
-  </script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-charcoal text-white min-h-screen antialiased">
+<body>
+  <div class="brand-gradient"></div>
   <div id="app-toast" class="toast hidden" aria-live="polite"></div>
-  <main class="app-shell max-w-lg mx-auto px-4 pb-24 pt-6">
-    <header class="mb-4">
-      <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-extrabold tracking-tight">Wallet Warden</h1>
-        <button id="open-settings" class="icon-btn" aria-label="Open settings">
-          <i class="fa-solid fa-gear"></i>
-        </button>
+  <header class="top-nav">
+    <div class="logo-wrap">
+      <div class="owl-mark">🦉</div>
+      <div>
+        <h1>Wallet Warden</h1>
+        <p>Your daily allowance guardian.</p>
       </div>
-      <p class="text-sm text-zinc-400 mt-1">Zero-friction daily allowance</p>
-    </header>
-
-    <nav class="tabbar" aria-label="Primary">
-      <button class="tabbar-btn tabbar-btn--active" data-tab="home" type="button" aria-current="page">
-        <i class="fa-solid fa-house"></i><span>Home</span>
-      </button>
-      <button class="tabbar-btn" data-tab="log" type="button">
-        <i class="fa-solid fa-plus"></i><span>Log</span>
-      </button>
-      <button class="tabbar-btn" data-tab="plan" type="button">
-        <i class="fa-solid fa-list-check"></i><span>Plan</span>
-      </button>
-      <button class="tabbar-btn" data-tab="goals" type="button">
-        <i class="fa-solid fa-bullseye"></i><span>Goals</span>
-      </button>
-      <button class="tabbar-btn" data-tab="insights" type="button">
-        <i class="fa-solid fa-chart-line"></i><span>Insights</span>
-      </button>
+    </div>
+    <nav class="desktop-nav" aria-label="Desktop tabs">
+      <button class="tabbar-btn tabbar-btn--active" data-tab="home" type="button" aria-current="page"><i class="fa-solid fa-house"></i>Home</button>
+      <button class="tabbar-btn" data-tab="log" type="button"><i class="fa-solid fa-receipt"></i>Log</button>
+      <button class="tabbar-btn" data-tab="plan" type="button"><i class="fa-solid fa-list-check"></i>Plan</button>
+      <button class="tabbar-btn" data-tab="goals" type="button"><i class="fa-solid fa-bullseye"></i>Goals</button>
+      <button class="tabbar-btn" data-tab="insights" type="button"><i class="fa-solid fa-chart-line"></i>Insights</button>
     </nav>
+    <div class="top-actions">
+      <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark and light mode"><i class="fa-solid fa-moon"></i></button>
+      <button id="open-settings" class="icon-btn" aria-label="Open settings"><i class="fa-solid fa-gear"></i></button>
+    </div>
+  </header>
 
+  <main class="app-shell">
     <section id="tab-home" class="bento-grid tab-panel" data-tab-panel="home">
-      <article class="bento tile-safe-spend">
-        <p class="label">Today's Safe-Spend</p>
-        <p id="safe-spend-value" class="safe-value">$0.00</p>
-        <div class="flex items-center justify-between text-xs text-zinc-400 mt-2">
-          <span id="days-remaining">0 days left</span>
-          <span id="month-spent">$0 spent</span>
+      <article class="bento hero-card">
+        <div class="hero-head">
+          <span class="label">Today's Safe-Spend</span>
+          <span id="streak-badge" class="streak-badge">🔥 <span id="streak-count">0</span></span>
         </div>
-        <div class="mt-3 status-row">
+        <div class="hero-main">
+          <p id="safe-spend-value" class="safe-value">$0.00</p>
+          <div class="ring-wrap">
+            <svg viewBox="0 0 120 120" class="progress-ring" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
+              <circle id="hero-ring-fill" cx="60" cy="60" r="52" class="ring-fill"></circle>
+            </svg>
+            <span id="hero-ring-percent" class="ring-percent">0%</span>
+          </div>
+        </div>
+        <p class="hero-sub"><span id="days-remaining">0 days left</span> · <span id="month-spent">$0 spent today</span></p>
+        <div class="status-row">
           <span id="budget-status-pill" class="status-pill status-pill--ok">On track</span>
           <span id="saved-today-pill" class="status-pill status-pill--neutral">Saved today: $0.00</span>
         </div>
       </article>
 
-      <article class="bento">
-        <p class="label">Streak</p>
-        <div class="flex items-end justify-between mt-2">
-          <p id="streak-count" class="text-4xl font-extrabold text-mint">0</p>
-          <p class="text-sm text-zinc-400 mb-1">days under limit</p>
-        </div>
+      <article id="forecast-banner" class="bento forecast-banner">At your current pace, you're on track.</article>
+      <article id="tip-card" class="bento tip-card"></article>
+
+      <article class="bento stats-grid">
+        <div class="stat-mini"><i class="fa-solid fa-wallet"></i><span>Spent Month</span><strong id="stat-spent-month">$0.00</strong></div>
+        <div class="stat-mini"><i class="fa-solid fa-piggy-bank"></i><span>Saved So Far</span><strong id="stat-saved-so-far">$0.00</strong></div>
+        <div class="stat-mini"><i class="fa-solid fa-chart-simple"></i><span>Avg / Day</span><strong id="stat-avg-day">$0.00</strong></div>
+        <div class="stat-mini"><i class="fa-solid fa-star"></i><span>Top Category</span><strong id="stat-top-category">—</strong></div>
       </article>
 
       <article class="bento">
-        <p class="label">Plan</p>
-        <form id="plan-form" class="space-y-3 mt-3">
-          <div>
-            <label for="income" class="input-label">Monthly income</label>
-            <input id="income" type="number" min="0" step="0.01" class="text-input" placeholder="e.g. 1200">
-          </div>
-          <div>
-            <label for="fixed-expenses" class="input-label">Fixed expenses</label>
-            <input id="fixed-expenses" type="number" min="0" step="0.01" class="text-input" placeholder="e.g. 800">
-          </div>
-          <button type="submit" class="primary-btn w-full">Update Plan</button>
-        </form>
+        <p class="label">Weekly spending</p>
+        <canvas id="weekly-chart" width="600" height="220" aria-label="Weekly spending bar chart"></canvas>
+      </article>
+      <article class="bento">
+        <p class="label">Category donut</p>
+        <div id="donut-wrap" class="donut-wrap"></div>
+        <ul id="donut-legend" class="breakdown-list"></ul>
       </article>
 
       <article class="bento">
-        <div class="flex items-center justify-between">
-          <p class="label">Quick Add</p>
-          <button id="edit-quick-adds" class="text-xs text-zinc-400 hover:text-white">Edit</button>
+        <div class="row-between">
+          <p class="label">Financial rank</p>
+          <span id="rank-badge" class="rank-badge">🐣 Broke Freshman</span>
         </div>
-        <div id="quick-add-grid" class="grid grid-cols-2 gap-2 mt-3"></div>
+        <div class="progress"><div id="rank-progress"></div></div>
+        <p id="rank-next-text" class="hint">0 days to next rank</p>
+      </article>
+      <article class="bento">
+        <p class="label">Streak calendar</p>
+        <div id="streak-calendar" class="streak-calendar"></div>
+        <p id="longest-streak" class="hint">Longest streak: 0 days</p>
+      </article>
+
+      <article class="bento">
+        <div class="row-between"><p class="label">Weekly challenge</p><span id="challenge-status" class="status-pill status-pill--neutral">Active</span></div>
+        <p id="challenge-text" class="hint mt8">Log every transaction for 7 days</p>
       </article>
 
       <article class="bento tile-history">
-        <div class="flex items-center justify-between">
-          <p class="label">This Month</p>
-          <p id="history-total" class="text-coral font-semibold">-$0.00</p>
+        <div class="row-between">
+          <p class="label">Recent transactions</p>
+          <button class="subtle-btn" data-tab-link="log" type="button">View all</button>
         </div>
-        <div class="history-actions mt-2">
-          <button id="undo-last" class="subtle-btn" type="button">Undo Last</button>
+        <ul id="transaction-list" class="history-list mt8"></ul>
+      </article>
+
+      <article class="bento">
+        <div class="row-between">
+          <p class="label">Quick Add</p>
+          <button id="edit-quick-adds" class="subtle-btn" type="button">Edit</button>
         </div>
-        <ul id="transaction-list" class="history-list mt-3"></ul>
+        <div id="quick-add-grid" class="quick-grid"></div>
       </article>
     </section>
 
     <section id="tab-log" class="bento-grid tab-panel hidden" data-tab-panel="log">
       <article class="bento">
-        <div class="flex items-center justify-between">
-          <p class="label">Add Transaction</p>
-          <button id="open-add-transaction" class="primary-btn" type="button">
-            <i class="fa-solid fa-plus mr-2"></i>New
-          </button>
+        <div class="row-between">
+          <p class="label">Transaction log</p>
+          <button id="open-add-transaction" class="primary-btn" type="button"><i class="fa-solid fa-plus"></i> New</button>
         </div>
-        <p class="text-sm text-zinc-400 mt-2">Use quick buttons for speed, or add a custom transaction.</p>
-      </article>
-
-      <article class="bento">
-        <div class="flex items-center justify-between">
-          <p class="label">Search</p>
-          <button id="jump-today" class="subtle-btn" type="button">Today</button>
+        <input id="search-query" class="text-input mt8" placeholder="Search label, category, note...">
+        <div class="chips mt8" id="time-filter-chips">
+          <button class="chip chip--active" data-range="all" type="button">All</button>
+          <button class="chip" data-range="today" type="button">Today</button>
+          <button class="chip" data-range="week" type="button">This Week</button>
+          <button class="chip" data-range="month" type="button">This Month</button>
         </div>
-        <input id="search-query" class="text-input mt-3" placeholder="Search label, category, note…">
-        <div class="grid grid-cols-2 gap-2 mt-2">
-          <select id="filter-category" class="text-input">
-            <option value="">All categories</option>
-          </select>
+        <div class="row mt8">
+          <select id="filter-category" class="text-input"></select>
           <input id="filter-month" type="month" class="text-input">
         </div>
       </article>
-
       <article class="bento tile-history">
-        <div class="flex items-center justify-between">
+        <div class="row-between">
           <p class="label">Transactions</p>
-          <p id="filtered-total" class="text-coral font-semibold">-$0.00</p>
+          <p id="filtered-total" class="money-negative">-$0.00</p>
         </div>
-        <ul id="filtered-transaction-list" class="history-list mt-3"></ul>
+        <ul id="filtered-transaction-list" class="history-list mt8"></ul>
+      </article>
+      <article class="bento">
+        <div class="row-between">
+          <p class="label">Shared expenses</p>
+          <p id="shared-balance" class="hint">$0.00 net</p>
+        </div>
+        <ul id="shared-expense-list" class="history-list mt8"></ul>
       </article>
     </section>
 
     <section id="tab-plan" class="bento-grid tab-panel hidden" data-tab-panel="plan">
       <article class="bento">
-        <p class="label">Income sources</p>
-        <p class="text-sm text-zinc-400 mt-2">Add stipend, job, family support, side gigs — monthly or one-time.</p>
-        <button id="open-income-editor" class="primary-btn w-full mt-3" type="button">Manage Income</button>
-      </article>
-      <article class="bento">
-        <p class="label">Fixed & recurring bills</p>
-        <p class="text-sm text-zinc-400 mt-2">Rent, tuition, subscriptions, phone, insurance — auto-applied monthly.</p>
-        <button id="open-recurring-editor" class="primary-btn w-full mt-3" type="button">Manage Recurring</button>
-      </article>
-      <article class="bento">
-        <p class="label">Categories</p>
-        <p class="text-sm text-zinc-400 mt-2">Customize your categories for better insights and budgeting.</p>
-        <button id="open-categories-editor" class="primary-btn w-full mt-3" type="button">Manage Categories</button>
+        <p class="label">Budget mode</p>
+        <div class="chips mt8">
+          <button id="mode-monthly" class="chip chip--active" type="button">Monthly Mode</button>
+          <button id="mode-semester" class="chip" type="button">Semester Mode</button>
+        </div>
+        <form id="plan-form" class="mt8">
+          <div class="row">
+            <input id="income" type="number" min="0" step="0.01" class="text-input" placeholder="Monthly income">
+            <input id="fixed-expenses" type="number" min="0" step="0.01" class="text-input" placeholder="Fixed expenses">
+          </div>
+          <div id="semester-fields" class="row mt8 hidden">
+            <input id="semester-lump-sum" type="number" min="0" step="0.01" class="text-input" placeholder="Semester lump sum">
+            <input id="semester-end-date" type="date" class="text-input">
+          </div>
+          <button type="submit" class="primary-btn mt8">Update Plan</button>
+        </form>
       </article>
     </section>
 
     <section id="tab-goals" class="bento-grid tab-panel hidden" data-tab-panel="goals">
       <article class="bento">
-        <div class="flex items-center justify-between">
+        <div class="row-between">
           <p class="label">Savings goals</p>
-          <button id="open-goals-editor" class="primary-btn" type="button">
-            <i class="fa-solid fa-plus mr-2"></i>New
-          </button>
+          <button id="open-goals-editor" class="primary-btn" type="button"><i class="fa-solid fa-plus"></i> New</button>
         </div>
-        <ul id="goals-list" class="goals-list mt-3"></ul>
+        <ul id="goals-list" class="goals-list mt8"></ul>
       </article>
     </section>
 
     <section id="tab-insights" class="bento-grid tab-panel hidden" data-tab-panel="insights">
-      <article class="bento">
-        <p class="label">This month snapshot</p>
-        <div class="grid grid-cols-2 gap-3 mt-3">
-          <div class="stat">
-            <p class="stat-label">Spent</p>
-            <p id="insight-spent" class="stat-value text-coral">-$0.00</p>
-          </div>
-          <div class="stat">
-            <p class="stat-label">Safe-spend today</p>
-            <p id="insight-safe" class="stat-value text-mint">$0.00</p>
-          </div>
-          <div class="stat">
-            <p class="stat-label">Top category</p>
-            <p id="insight-top-category" class="stat-value">$—</p>
-          </div>
-          <div class="stat">
-            <p class="stat-label">Avg / day</p>
-            <p id="insight-avg-day" class="stat-value">$0.00</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="bento">
-        <p class="label">By category</p>
-        <ul id="category-breakdown" class="breakdown-list mt-3"></ul>
-      </article>
+      <article class="bento"><p class="label">Monthly summary</p><div id="monthly-segments" class="segments mt8"></div></article>
+      <article class="bento"><p class="label">Spending trend (30 days)</p><canvas id="trend-chart" width="600" height="220"></canvas></article>
+      <article class="bento"><p class="label">Category breakdown</p><ul id="category-breakdown" class="breakdown-list mt8"></ul></article>
+      <article class="bento"><p class="label">Smart insights</p><ul id="smart-insights" class="breakdown-list mt8"></ul></article>
     </section>
   </main>
+  <nav class="mobile-nav" aria-label="Primary">
+    <button class="tabbar-btn tabbar-btn--active" data-tab="home" type="button" aria-current="page"><i class="fa-solid fa-house"></i><span>Home</span></button>
+    <button class="tabbar-btn" data-tab="log" type="button"><i class="fa-solid fa-receipt"></i><span>Log</span></button>
+    <button class="tabbar-btn" data-tab="plan" type="button"><i class="fa-solid fa-list-check"></i><span>Plan</span></button>
+    <button class="tabbar-btn" data-tab="goals" type="button"><i class="fa-solid fa-bullseye"></i><span>Goals</span></button>
+    <button class="tabbar-btn" data-tab="insights" type="button"><i class="fa-solid fa-chart-line"></i><span>Insights</span></button>
+  </nav>
 
   <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
     <div class="modal-card">
@@ -225,6 +211,14 @@
       </div>
 
       <div class="space-y-4">
+        <div>
+          <label for="currency-select" class="input-label">Currency</label>
+          <select id="currency-select" class="text-input mt-1"></select>
+        </div>
+        <div>
+          <label class="option-row"><input id="daily-reminder-toggle" type="checkbox"><span>Daily Reminder</span></label>
+          <input id="daily-reminder-time" type="time" class="text-input mt-2">
+        </div>
         <div>
           <p class="input-label mb-2">Unspent daily behavior</p>
           <label class="option-row">
@@ -248,6 +242,8 @@
         <button id="reset-data" class="danger-btn w-full">
           <i class="fa-solid fa-trash mr-2"></i>Clear All Data
         </button>
+        <button id="open-data-modal" class="subtle-btn w-full" type="button">Backups & Import/Export</button>
+        <p class="hint">Last backup: <span id="last-backup-text">Never</span></p>
       </div>
     </div>
   </div>
@@ -284,6 +280,11 @@
         <input id="tx-label" class="text-input" maxlength="40" placeholder="What was it?" aria-label="Label">
         <select id="tx-category" class="text-input" aria-label="Category"></select>
         <input id="tx-note" class="text-input" maxlength="80" placeholder="Optional note" aria-label="Note">
+        <label class="option-row"><input id="tx-split-toggle" type="checkbox"><span>Split this expense</span></label>
+        <div id="tx-split-fields" class="row hidden">
+          <input id="tx-split-count" type="number" min="2" max="6" class="text-input" placeholder="People (2-6)">
+          <input id="tx-split-names" class="text-input" placeholder="Names (optional)">
+        </div>
         <input id="tx-date" class="text-input" type="date" aria-label="Date">
         <div class="grid grid-cols-2 gap-2">
           <button id="save-tx" type="submit" class="primary-btn w-full">Save</button>
@@ -316,19 +317,20 @@
 
   <div id="onboarding-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
     <div class="modal-card">
-      <h2 id="onboarding-title" class="text-xl font-extrabold">Welcome to Wallet Warden</h2>
-      <p class="text-sm text-zinc-300 mt-2">Three quick steps and you’re fully set up.</p>
-      <ol class="onboarding-list mt-3">
-        <li>Enter monthly income and fixed expenses.</li>
-        <li>Tap quick buttons to log spending instantly.</li>
-        <li>Stay under the daily limit to build your streak.</li>
-      </ol>
-      <div class="mt-4 space-y-3">
+      <div class="onboarding-owl">🦉</div>
+      <h2 id="onboarding-title" class="text-xl font-extrabold">Warden setup</h2>
+      <p id="onboarding-msg" class="hint mt8">Let's guard your money with 3 quick steps.</p>
+      <div id="onboarding-steps"></div>
+      <div class="onboarding-dots"><span class="on-dot on-dot--active"></span><span class="on-dot"></span><span class="on-dot"></span></div>
+      <div class="mt8">
         <label class="option-row">
           <input id="dont-show-onboarding" type="checkbox">
           <span>Don’t show this again</span>
         </label>
-        <button id="start-using-app" class="primary-btn w-full" type="button">Start Using Wallet Warden</button>
+        <div class="row mt8">
+          <button id="onboarding-next" class="primary-btn w-full" type="button">Next</button>
+          <button id="start-using-app" class="subtle-btn w-full hidden" type="button">Finish</button>
+        </div>
       </div>
     </div>
   </div>
