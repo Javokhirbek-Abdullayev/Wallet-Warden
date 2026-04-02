@@ -2165,29 +2165,111 @@ function populateCurrencySelect() {
   saveWwCurrency(getCurrencyMeta().symbol, state.currencyCode);
 }
 
+/** After OAuth redirect, session is parsed from the URL hash asynchronously — wait before first getSession. */
+async function ensureAuthSessionReady(supabase) {
+  if (!supabase) return;
+  try {
+    if (typeof supabase.auth.initialize === "function") {
+      await supabase.auth.initialize();
+    }
+  } catch (_) {
+    /* older clients without initialize() */
+  }
+  const h = window.location.hash;
+  if (h && (h.includes("access_token") || h.includes("error"))) {
+    await new Promise((r) => setTimeout(r, 80));
+  }
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+
+function getUserDisplayParts(user) {
+  if (!user) return { email: "", name: "", avatar: "", initials: "?" };
+  const meta = user.user_metadata || {};
+  const idData = user.identities?.[0]?.identity_data || {};
+  const email = user.email || meta.email || idData.email || "";
+  const name = (meta.full_name || meta.name || meta.preferred_username || idData.name || email.split("@")[0] || "?").trim();
+  const avatar =
+    meta.avatar_url || meta.picture || idData.avatar_url || idData.picture || "";
+  const parts = name.split(/\s+/).filter(Boolean);
+  let initials = "?";
+  if (parts.length >= 2) initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  else if (parts.length === 1 && parts[0].length) initials = parts[0].slice(0, 2).toUpperCase();
+  else if (email) initials = email.slice(0, 2).toUpperCase();
+  return { email, name, avatar, initials };
+}
+
+function applyProfileAvatar(avatar, initials, displayName) {
+  const img = $("auth-avatar-img");
+  const ini = $("auth-avatar-initials");
+  const nameEl = $("auth-display-name");
+  if (nameEl) nameEl.textContent = displayName || "";
+  if (!img || !ini) return;
+  ini.textContent = initials || "?";
+  const showInitials = () => {
+    img.classList.add("hidden");
+    ini.classList.remove("hidden");
+  };
+  const showPhoto = () => {
+    img.classList.remove("hidden");
+    ini.classList.add("hidden");
+  };
+  img.onload = showPhoto;
+  img.onerror = showInitials;
+  if (avatar) {
+    img.alt = displayName || "Profile";
+    if (img.src !== avatar) img.src = avatar;
+    if (img.complete && img.naturalWidth) showPhoto();
+    else showInitials();
+  } else {
+    img.removeAttribute("src");
+    showInitials();
+  }
+}
+
 async function updateAuthUI() {
   const supabase = window.wwSupabaseClient;
   const label = $("auth-nav-label");
-  const wrap = $("auth-email-wrap");
+  const profileWrap = $("auth-profile-wrap");
   const openAuth = $("open-auth");
-  if (!supabase) return;
+  if (!supabase) {
+    openAuth?.classList.remove("hidden");
+    profileWrap?.classList.remove("is-visible");
+    if (label) label.textContent = "Sign in";
+    return;
+  }
+  await ensureAuthSessionReady(supabase);
   const {
     data: { session }
   } = await supabase.auth.getSession();
-  if (session?.user?.email) {
-    const em = session.user.email;
-    const short = em.length > 18 ? `${em.slice(0, 8)}…` : em;
+  let user = session?.user ?? null;
+  try {
+    const { data: userData, error: guErr } = await supabase.auth.getUser();
+    if (!guErr && userData?.user) user = userData.user;
+  } catch (_) {
+    /* offline — keep session user */
+  }
+  if (user) {
+    const { email, name, avatar, initials } = getUserDisplayParts(user);
+    const shortName = name.length > 20 ? `${name.slice(0, 18)}…` : name;
+    const navName = shortName || (email.length > 22 ? `${email.slice(0, 12)}…` : email);
     if (label) label.textContent = "Account";
-    wrap?.classList.add("is-visible");
-    $("auth-email-display").textContent = short;
+    applyProfileAvatar(avatar, initials, navName);
+    profileWrap?.classList.add("is-visible");
     openAuth?.classList.add("hidden");
-    $("settings-auth-status").textContent = `Signed in with Google · ${em}`;
+    $("settings-auth-status").textContent = `Signed in with Google · ${email || name}`;
     $("settings-sign-in")?.classList.add("hidden");
     $("settings-log-out")?.classList.remove("hidden");
+    try {
+      if (window.location.hash && /access_token|refresh_token/.test(window.location.hash)) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    } catch (_) {}
   } else {
-    wrap?.classList.remove("is-visible");
+    profileWrap?.classList.remove("is-visible");
     openAuth?.classList.remove("hidden");
     if (label) label.textContent = "Sign in";
+    applyProfileAvatar("", "?", "");
+    if ($("auth-display-name")) $("auth-display-name").textContent = "";
     $("settings-auth-status").textContent = "Not signed in — your data is local only";
     $("settings-sign-in")?.classList.remove("hidden");
     $("settings-log-out")?.classList.add("hidden");
@@ -2305,6 +2387,7 @@ function bindEvents() {
     if (e.target === $("settings-modal")) closeModal($("settings-modal"));
   });
   $("open-auth")?.addEventListener("click", () => openModal($("auth-modal")));
+  $("auth-profile-btn")?.addEventListener("click", () => openModal($("settings-modal")));
   $("guest-sync-banner-cta")?.addEventListener("click", () => openModal($("auth-modal")));
   $("auth-google")?.addEventListener("click", () => loginWithGoogle());
   $("auth-skip")?.addEventListener("click", () => closeModal($("auth-modal")));
@@ -2480,7 +2563,38 @@ async function init() {
   settleYesterday();
   bindEvents();
   populateCategorySelect($("tx-category"), false);
-    render();
+
+  if (window.wwSupabaseClient) {
+    try {
+      const sb = window.wwSupabaseClient;
+      sb.auth.onAuthStateChange(async (event, session) => {
+        if (
+          session &&
+          (event === "SIGNED_IN" ||
+            event === "TOKEN_REFRESHED" ||
+            event === "INITIAL_SESSION" ||
+            event === "USER_UPDATED")
+        ) {
+          try {
+            await mergeCloudOnLogin();
+          } catch (_) {}
+          render();
+        }
+        await updateAuthUI();
+      });
+      await ensureAuthSessionReady(sb);
+      const {
+        data: { session }
+      } = await sb.auth.getSession();
+      if (session) {
+        try {
+          await mergeCloudOnLogin();
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  render();
   setActiveTab(state.activeTab || "home");
   maybeInstallBanner();
   guestBanner();
@@ -2489,28 +2603,12 @@ async function init() {
       navigator.serviceWorker.register("service-worker.js").catch(() => {});
     });
   }
-  if (window.wwSupabaseClient) {
-    try {
-      const {
-        data: { session }
-      } = await window.wwSupabaseClient.auth.getSession();
-      if (session) await mergeCloudOnLogin();
-      window.wwSupabaseClient.auth.onAuthStateChange(async () => {
-        const s = await window.wwSupabaseClient.auth.getSession();
-        if (s.data.session) {
-          await mergeCloudOnLogin();
-          render();
-        }
-        updateAuthUI();
-      });
-    } catch (_) {}
-  }
   if (localStorage.getItem("ww_sync_pending") === "true") {
     try {
       await syncAfterSave();
     } catch (_) {}
   }
-  updateAuthUI();
+  await updateAuthUI();
   if (localStorage.getItem("ww_onboarded") !== "true") {
     openOnboarding();
   }

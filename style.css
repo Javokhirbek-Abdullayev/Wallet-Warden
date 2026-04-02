@@ -336,15 +336,86 @@ textarea:focus {
   flex-shrink: 0;
 }
 
-.auth-email-wrap {
+.auth-profile-wrap {
   display: none;
   align-items: center;
-  gap: 6px;
-  max-width: 140px;
+  gap: 8px;
+  max-width: min(200px, 42vw);
 }
 
-.auth-email-wrap.is-visible {
+.auth-profile-wrap.is-visible {
   display: flex;
+}
+
+.auth-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.auth-profile-btn:hover {
+  border-color: var(--primary);
+  background: var(--surface3);
+}
+
+.auth-profile-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.auth-avatar-ring {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--primary-dim), var(--accent-dim));
+}
+
+.auth-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.auth-avatar-img.hidden {
+  display: none !important;
+}
+
+.auth-avatar-initials {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--surface2);
+}
+
+.auth-avatar-initials.hidden {
+  display: none !important;
+}
+
+.auth-display-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  max-width: 120px;
 }
 
 .sync-dot {
@@ -353,14 +424,7 @@ textarea:focus {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-dim);
-}
-
-.auth-email-display {
-  font-size: 13px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .theme-icon-sun.hidden,
@@ -1775,8 +1839,17 @@ body.light-mode .btn-google:hover {
     display: none;
   }
 
-  .auth-email-wrap.is-visible ~ #open-auth {
+  .auth-profile-wrap.is-visible ~ #open-auth {
     display: none;
+  }
+
+  .auth-display-name {
+    display: none;
+  }
+
+  .auth-profile-btn {
+    padding: 4px;
+    border-radius: 50%;
   }
 }
 
