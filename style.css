@@ -336,52 +336,53 @@ textarea:focus {
   flex-shrink: 0;
 }
 
-.auth-profile-wrap {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  max-width: min(200px, 42vw);
-}
-
-.auth-profile-wrap.is-visible {
-  display: flex;
-}
-
-.auth-profile-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-full);
-  background: var(--surface2);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.auth-profile-btn:hover {
-  border-color: var(--primary);
-  background: var(--surface3);
-}
-
-.auth-profile-btn:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.auth-avatar-ring {
+/* Single header control: Sign in ↔ avatar */
+.nav-auth {
   position: relative;
-  width: 36px;
-  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.nav-auth-out {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-auth-in {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-auth.nav-auth--signed-in {
+  padding: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--r-full);
+}
+
+.nav-auth-avatar-ring {
+  position: relative;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, var(--primary-dim), var(--accent-dim));
+}
+
+.nav-auth-avatar-ring .auth-avatar-initials {
+  font-size: 11px;
+}
+
+.nav-auth-sync {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  box-shadow: 0 0 0 2px var(--surface1);
 }
 
 .auth-avatar-img {
@@ -408,14 +409,6 @@ textarea:focus {
 
 .auth-avatar-initials.hidden {
   display: none !important;
-}
-
-.auth-display-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-secondary);
-  max-width: 120px;
 }
 
 .sync-dot {
@@ -1835,21 +1828,8 @@ body.light-mode .btn-google:hover {
 }
 
 @media (max-width: 767px) {
-  #open-auth .btn-compact span {
+  #auth-nav-label {
     display: none;
-  }
-
-  .auth-profile-wrap.is-visible ~ #open-auth {
-    display: none;
-  }
-
-  .auth-display-name {
-    display: none;
-  }
-
-  .auth-profile-btn {
-    padding: 4px;
-    border-radius: 50%;
   }
 }
 

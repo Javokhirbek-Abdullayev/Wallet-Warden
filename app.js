@@ -2166,8 +2166,49 @@ function populateCurrencySelect() {
 }
 
 /** After OAuth redirect, session is parsed from the URL hash asynchronously — wait before first getSession. */
+/** Strip OAuth error query params and hash after session is stored (avoids broken reload UX). */
+function stripOAuthFromBrowserUrl() {
+  try {
+    const u = new URL(window.location.href);
+    u.hash = "";
+    u.searchParams.delete("error");
+    u.searchParams.delete("error_code");
+    u.searchParams.delete("error_description");
+    const q = u.searchParams.toString();
+    history.replaceState(null, "", u.pathname + (q ? `?${q}` : ""));
+  } catch (_) {}
+}
+
+/**
+ * Google/Supabase sometimes redirect with ?error=bad_oauth_state while tokens still appear in the
+ * URL hash (e.g. PKCE state lost across tabs or SW). Parse the hash and call setSession so login still works.
+ */
+async function recoverOAuthFromUrl(supabase) {
+  if (!supabase) return false;
+  const raw = window.location.hash?.replace(/^#/, "") || "";
+  if (!raw.includes("access_token")) return false;
+  let params;
+  try {
+    params = new URLSearchParams(raw);
+  } catch {
+    return false;
+  }
+  const access_token = params.get("access_token");
+  const refresh_token = params.get("refresh_token") || "";
+  if (!access_token) return false;
+  try {
+    const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+    if (error) return false;
+    stripOAuthFromBrowserUrl();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function ensureAuthSessionReady(supabase) {
   if (!supabase) return;
+  await recoverOAuthFromUrl(supabase);
   try {
     if (typeof supabase.auth.initialize === "function") {
       await supabase.auth.initialize();
@@ -2198,11 +2239,9 @@ function getUserDisplayParts(user) {
   return { email, name, avatar, initials };
 }
 
-function applyProfileAvatar(avatar, initials, displayName) {
+function applyProfileAvatar(avatar, initials, altLabel) {
   const img = $("auth-avatar-img");
   const ini = $("auth-avatar-initials");
-  const nameEl = $("auth-display-name");
-  if (nameEl) nameEl.textContent = displayName || "";
   if (!img || !ini) return;
   ini.textContent = initials || "?";
   const showInitials = () => {
@@ -2216,7 +2255,7 @@ function applyProfileAvatar(avatar, initials, displayName) {
   img.onload = showPhoto;
   img.onerror = showInitials;
   if (avatar) {
-    img.alt = displayName || "Profile";
+    img.alt = altLabel || "Profile";
     if (img.src !== avatar) img.src = avatar;
     if (img.complete && img.naturalWidth) showPhoto();
     else showInitials();
@@ -2229,12 +2268,17 @@ function applyProfileAvatar(avatar, initials, displayName) {
 async function updateAuthUI() {
   const supabase = window.wwSupabaseClient;
   const label = $("auth-nav-label");
-  const profileWrap = $("auth-profile-wrap");
   const openAuth = $("open-auth");
+  const navOut = $("nav-auth-out");
+  const navIn = $("nav-auth-in");
+  const syncDot = $("nav-auth-sync");
   if (!supabase) {
-    openAuth?.classList.remove("hidden");
-    profileWrap?.classList.remove("is-visible");
+    openAuth?.classList.remove("nav-auth--signed-in");
+    navOut?.classList.remove("hidden");
+    navIn?.classList.add("hidden");
+    syncDot?.classList.add("hidden");
     if (label) label.textContent = "Sign in";
+    openAuth?.setAttribute("aria-label", "Sign in with Google to sync");
     return;
   }
   await ensureAuthSessionReady(supabase);
@@ -2252,24 +2296,38 @@ async function updateAuthUI() {
     const { email, name, avatar, initials } = getUserDisplayParts(user);
     const shortName = name.length > 20 ? `${name.slice(0, 18)}…` : name;
     const navName = shortName || (email.length > 22 ? `${email.slice(0, 12)}…` : email);
-    if (label) label.textContent = "Account";
+    if (label) label.textContent = "Sign in";
     applyProfileAvatar(avatar, initials, navName);
-    profileWrap?.classList.add("is-visible");
-    openAuth?.classList.add("hidden");
+    openAuth?.classList.add("nav-auth--signed-in");
+    navOut?.classList.add("hidden");
+    navIn?.classList.remove("hidden");
+    syncDot?.classList.remove("hidden");
+    openAuth?.setAttribute("aria-label", `Account: ${name || email || "signed in"}. Open settings.`);
     $("settings-auth-status").textContent = `Signed in with Google · ${email || name}`;
     $("settings-sign-in")?.classList.add("hidden");
     $("settings-log-out")?.classList.remove("hidden");
     try {
       if (window.location.hash && /access_token|refresh_token/.test(window.location.hash)) {
-        history.replaceState(null, "", window.location.pathname + window.location.search);
+        stripOAuthFromBrowserUrl();
       }
     } catch (_) {}
   } else {
-    profileWrap?.classList.remove("is-visible");
-    openAuth?.classList.remove("hidden");
+    openAuth?.classList.remove("nav-auth--signed-in");
+    navOut?.classList.remove("hidden");
+    navIn?.classList.add("hidden");
+    syncDot?.classList.add("hidden");
     if (label) label.textContent = "Sign in";
-    applyProfileAvatar("", "?", "");
-    if ($("auth-display-name")) $("auth-display-name").textContent = "";
+    openAuth?.setAttribute("aria-label", "Sign in with Google to sync");
+    const img = $("auth-avatar-img");
+    const ini = $("auth-avatar-initials");
+    if (img) {
+      img.removeAttribute("src");
+      img.classList.add("hidden");
+    }
+    if (ini) {
+      ini.textContent = "";
+      ini.classList.add("hidden");
+    }
     $("settings-auth-status").textContent = "Not signed in — your data is local only";
     $("settings-sign-in")?.classList.remove("hidden");
     $("settings-log-out")?.classList.add("hidden");
@@ -2280,19 +2338,16 @@ async function updateAuthUI() {
     : "Never synced";
 }
 
-/** Canonical site for OAuth return — must be listed in Supabase → Authentication → URL Configuration → Redirect URLs */
-const WW_SITE_ORIGIN = "https://wallet-warden.one";
-
 /**
- * Return URL after Google → Supabase must exactly match an allowed Redirect URL.
- * Using the live origin on production avoids Supabase falling back to Site URL (e.g. localhost:3000).
+ * Return URL after Google → must exactly match an allowed Supabase Redirect URL.
+ * Use the current origin (apex vs www) so PKCE/state in localStorage matches the callback origin.
  */
 function getOAuthRedirectTo() {
   const host = window.location.hostname;
   const path = window.location.pathname || "/";
   const search = window.location.search || "";
   if (host === "wallet-warden.one" || host === "www.wallet-warden.one") {
-    return `${WW_SITE_ORIGIN}${path}${search}`;
+    return `${window.location.origin}${path}${search}`;
   }
   return window.location.href.replace(/#.*$/, "");
 }
@@ -2386,8 +2441,10 @@ function bindEvents() {
   $("settings-modal")?.addEventListener("click", (e) => {
     if (e.target === $("settings-modal")) closeModal($("settings-modal"));
   });
-  $("open-auth")?.addEventListener("click", () => openModal($("auth-modal")));
-  $("auth-profile-btn")?.addEventListener("click", () => openModal($("settings-modal")));
+  $("open-auth")?.addEventListener("click", () => {
+    if ($("open-auth")?.classList.contains("nav-auth--signed-in")) openModal($("settings-modal"));
+    else openModal($("auth-modal"));
+  });
   $("guest-sync-banner-cta")?.addEventListener("click", () => openModal($("auth-modal")));
   $("auth-google")?.addEventListener("click", () => loginWithGoogle());
   $("auth-skip")?.addEventListener("click", () => closeModal($("auth-modal")));
@@ -2567,6 +2624,7 @@ async function init() {
   if (window.wwSupabaseClient) {
     try {
       const sb = window.wwSupabaseClient;
+      await recoverOAuthFromUrl(sb);
       sb.auth.onAuthStateChange(async (event, session) => {
         if (
           session &&
