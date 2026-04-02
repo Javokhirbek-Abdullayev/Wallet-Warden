@@ -9,340 +9,517 @@
   <meta name="apple-mobile-web-app-title" content="Wallet Warden">
   <title>Wallet Warden</title>
   <link rel="icon" type="image/svg+xml" href="icon-192.svg">
-  <link rel="apple-touch-icon" href="icon-192.svg">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="brand-gradient"></div>
-  <div id="app-toast" class="toast hidden" aria-live="polite"></div>
-  <header class="top-nav">
-    <div class="logo-wrap">
-      <div class="owl-mark">🦉</div>
-      <div>
-        <h1>Wallet Warden</h1>
-        <p>Your daily allowance guardian.</p>
-      </div>
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <defs>
+      <symbol id="warden-owl" viewBox="0 0 64 64">
+        <path fill="var(--primary, #6C63FF)" d="M32 4C18 4 8 14 8 28c0 10 6 18 14 22v6c0 2 2 4 4 4h12c2 0 4-2 4-4v-6c8-4 14-12 14-22 0-14-10-24-24-24z"/>
+        <circle cx="24" cy="26" r="6" fill="var(--accent, #00D4AA)"/>
+        <circle cx="40" cy="26" r="6" fill="var(--accent, #00D4AA)"/>
+        <circle cx="24" cy="26" r="2.5" fill="var(--bg, #0F0F1A)"/>
+        <circle cx="40" cy="26" r="2.5" fill="var(--bg, #0F0F1A)"/>
+        <path fill="var(--warning, #FFB347)" d="M26 38h12l-6 8z"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div id="install-banner" class="install-banner hidden" role="region" aria-label="Install app">
+    <span>📲 Install Wallet Warden on your home screen for instant access</span>
+    <button type="button" class="btn-primary btn-sm" id="install-banner-btn" aria-label="Install app">Install</button>
+    <button type="button" class="btn-ghost btn-sm" id="install-banner-dismiss" aria-label="Dismiss install banner">×</button>
+  </div>
+
+  <div id="guest-sync-banner" class="guest-sync-banner hidden" role="region" aria-label="Sync reminder">
+    <span>Your data is only on this device. Sign in to sync across devices and never lose your budget.</span>
+    <button type="button" class="btn-ghost btn-sm" id="guest-sync-banner-cta" aria-label="Sign in to sync">→</button>
+  </div>
+
+  <div id="app-toast-host" aria-live="polite"></div>
+
+  <header class="top-nav" id="main-header">
+    <div class="top-nav__brand">
+      <svg class="logo-owl" width="28" height="28" aria-hidden="true"><use href="#warden-owl"/></svg>
+      <span class="top-nav__title font-space">Wallet Warden</span>
     </div>
-    <nav class="desktop-nav" aria-label="Desktop tabs">
-      <button class="tabbar-btn tabbar-btn--active" data-tab="home" type="button" aria-current="page"><i class="fa-solid fa-house"></i>Home</button>
-      <button class="tabbar-btn" data-tab="log" type="button"><i class="fa-solid fa-receipt"></i>Log</button>
-      <button class="tabbar-btn" data-tab="plan" type="button"><i class="fa-solid fa-list-check"></i>Plan</button>
-      <button class="tabbar-btn" data-tab="goals" type="button"><i class="fa-solid fa-bullseye"></i>Goals</button>
-      <button class="tabbar-btn" data-tab="insights" type="button"><i class="fa-solid fa-chart-line"></i>Insights</button>
+    <nav class="desktop-nav" aria-label="Main tabs">
+      <button class="nav-tab nav-tab--active" data-tab="home" type="button" aria-current="page">Home</button>
+      <button class="nav-tab" data-tab="log" type="button">Log</button>
+      <button class="nav-tab" data-tab="plan" type="button">Plan</button>
+      <button class="nav-tab" data-tab="goals" type="button">Goals</button>
+      <button class="nav-tab" data-tab="insights" type="button">Insights</button>
     </nav>
-    <div class="top-actions">
-      <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark and light mode"><i class="fa-solid fa-moon"></i></button>
-      <button id="open-settings" class="icon-btn" aria-label="Open settings"><i class="fa-solid fa-gear"></i></button>
+    <div class="top-nav__actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle light and dark mode">
+        <span class="theme-icon-moon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
+        <span class="theme-icon-sun hidden" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
+      </button>
+      <button id="open-auth" class="btn-ghost btn-compact" type="button" aria-label="Sign in with Google to sync">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        <span id="auth-nav-label">Sign in</span>
+      </button>
+      <span id="auth-email-wrap" class="auth-email-wrap hidden">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span id="auth-email-display" class="auth-email-display"></span>
+      </span>
+      <button id="open-settings" class="icon-btn" type="button" aria-label="Open settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
     </div>
   </header>
 
-  <main class="app-shell">
-    <section id="tab-home" class="bento-grid tab-panel" data-tab-panel="home">
-      <article class="bento hero-card">
-        <div class="hero-head">
-          <span class="label">Today's Safe-Spend</span>
-          <span id="streak-badge" class="streak-badge">🔥 <span id="streak-count">0</span></span>
-        </div>
-        <div class="hero-main">
-          <p id="safe-spend-value" class="safe-value">$0.00</p>
-          <div class="ring-wrap">
-            <svg viewBox="0 0 120 120" class="progress-ring" aria-hidden="true">
-              <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
-              <circle id="hero-ring-fill" cx="60" cy="60" r="52" class="ring-fill"></circle>
-            </svg>
-            <span id="hero-ring-percent" class="ring-percent">0%</span>
+  <main class="app-shell" id="app-shell">
+    <section id="tab-home" class="tab-panel tab-content" data-tab-panel="home">
+      <article id="hero-card" class="card hero-card">
+        <div class="hero-card__accent" id="hero-accent-bar" aria-hidden="true"></div>
+        <div class="hero-card__top">
+          <div class="hero-streak" id="hero-streak-wrap" title="">
+            <span class="hero-streak__icon" aria-hidden="true">🔥</span>
+            <span id="streak-count" class="hero-streak__num font-space">0</span>
           </div>
         </div>
-        <p class="hero-sub"><span id="days-remaining">0 days left</span> · <span id="month-spent">$0 spent today</span></p>
-        <div class="status-row">
-          <span id="budget-status-pill" class="status-pill status-pill--ok">On track</span>
-          <span id="saved-today-pill" class="status-pill status-pill--neutral">Saved today: $0.00</span>
+        <div class="hero-card__body">
+          <div class="hero-card__text">
+            <p id="safe-spend-value" class="hero-amount font-space">$0.00</p>
+            <p class="hero-sub hero-sub--1"><span id="days-remaining">0 days left</span> · <span id="month-spent">$0 spent today</span></p>
+            <p id="hero-status-msg" class="hero-sub hero-sub--2">You're on track. Keep it up! 🎯</p>
+          </div>
+          <div class="hero-ring-wrap" aria-hidden="true">
+            <svg viewBox="0 0 120 120" class="hero-arc-svg">
+              <circle cx="60" cy="60" r="52" class="ring-bg" fill="none" stroke-width="8"/>
+              <circle id="hero-ring-fill" cx="60" cy="60" r="52" class="ring-fill" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <span id="hero-ring-percent" class="ring-percent font-space">0%</span>
+          </div>
         </div>
+        <p id="rank-line-subtle" class="rank-line-subtle"></p>
       </article>
 
-      <article id="forecast-banner" class="bento forecast-banner">At your current pace, you're on track.</article>
-      <article id="tip-card" class="bento tip-card"></article>
+      <div id="forecast-banner" class="forecast-pill" role="status"></div>
 
-      <article class="bento stats-grid">
-        <div class="stat-mini"><i class="fa-solid fa-wallet"></i><span>Spent Month</span><strong id="stat-spent-month">$0.00</strong></div>
-        <div class="stat-mini"><i class="fa-solid fa-piggy-bank"></i><span>Saved So Far</span><strong id="stat-saved-so-far">$0.00</strong></div>
-        <div class="stat-mini"><i class="fa-solid fa-chart-simple"></i><span>Avg / Day</span><strong id="stat-avg-day">$0.00</strong></div>
-        <div class="stat-mini"><i class="fa-solid fa-star"></i><span>Top Category</span><strong id="stat-top-category">—</strong></div>
+      <div class="quick-stats-scroll" id="quick-stats-row">
+        <div class="stat-chip stat-chip--danger"><span class="stat-chip__label">Spent this month</span><strong id="stat-spent-month" class="stat-chip__val font-space">$0</strong></div>
+        <div class="stat-chip stat-chip--accent"><span class="stat-chip__label">Saved so far</span><strong id="stat-saved-so-far" class="stat-chip__val font-space">$0</strong></div>
+        <div class="stat-chip stat-chip--primary"><span class="stat-chip__label">Avg per day</span><strong id="stat-avg-day" class="stat-chip__val font-space">$0</strong></div>
+        <div class="stat-chip stat-chip--warning"><span class="stat-chip__label">Top category</span><strong id="stat-top-category" class="stat-chip__val font-space">—</strong></div>
+      </div>
+
+      <article id="weekly-challenge-card" class="card challenge-card">
+        <div class="challenge-card__head">
+          <span aria-hidden="true">🏆</span>
+          <span>This Week's Challenge</span>
+          <span id="challenge-status" class="challenge-status"></span>
+        </div>
+        <p id="challenge-title" class="challenge-title"></p>
+        <p id="challenge-desc" class="challenge-desc"></p>
+        <p id="challenge-progress" class="challenge-progress"></p>
       </article>
 
-      <article class="bento">
-        <p class="label">Weekly spending</p>
-        <canvas id="weekly-chart" width="600" height="220" aria-label="Weekly spending bar chart"></canvas>
+      <article class="card">
+        <h3 class="card__title">Last 7 days</h3>
+        <canvas id="weekly-chart" width="700" height="160" class="chart-canvas" aria-label="Weekly spending bar chart"></canvas>
       </article>
-      <article class="bento">
-        <p class="label">Category donut</p>
+
+      <article class="card">
+        <h3 class="card__title">This month by category</h3>
         <div id="donut-wrap" class="donut-wrap"></div>
-        <ul id="donut-legend" class="breakdown-list"></ul>
+        <ul id="donut-legend" class="donut-legend"></ul>
       </article>
 
-      <article class="bento">
-        <div class="row-between">
-          <p class="label">Financial rank</p>
-          <span id="rank-badge" class="rank-badge">🐣 Broke Freshman</span>
+      <article id="warden-says-card" class="card warden-says">
+        <svg class="warden-says__owl" width="32" height="32" aria-hidden="true"><use href="#warden-owl"/></svg>
+        <div class="warden-says__body">
+          <p class="warden-says__label">Warden says:</p>
+          <p id="warden-tip-text" class="warden-says__text"></p>
         </div>
-        <div class="progress"><div id="rank-progress"></div></div>
-        <p id="rank-next-text" class="hint">0 days to next rank</p>
-      </article>
-      <article class="bento">
-        <p class="label">Streak calendar</p>
-        <div id="streak-calendar" class="streak-calendar"></div>
-        <p id="longest-streak" class="hint">Longest streak: 0 days</p>
+        <button type="button" id="dismiss-tip" class="warden-says__dismiss" aria-label="Dismiss tip">×</button>
       </article>
 
-      <article class="bento">
-        <div class="row-between"><p class="label">Weekly challenge</p><span id="challenge-status" class="status-pill status-pill--neutral">Active</span></div>
-        <p id="challenge-text" class="hint mt8">Log every transaction for 7 days</p>
-      </article>
-
-      <article class="bento tile-history">
+      <article class="card">
         <div class="row-between">
-          <p class="label">Recent transactions</p>
-          <button class="subtle-btn" data-tab-link="log" type="button">View all</button>
+          <h3 class="card__title">Recent transactions</h3>
+          <button type="button" class="btn-ghost btn-sm" data-tab-link="log" aria-label="View all transactions">View all →</button>
         </div>
-        <ul id="transaction-list" class="history-list mt8"></ul>
+        <ul id="transaction-list" class="tx-preview-list"></ul>
       </article>
 
-      <article class="bento">
+      <article class="card">
         <div class="row-between">
-          <p class="label">Quick Add</p>
-          <button id="edit-quick-adds" class="subtle-btn" type="button">Edit</button>
+          <h3 class="card__title">Quick Add</h3>
+          <button id="edit-quick-adds" type="button" class="btn-ghost btn-sm" aria-label="Edit quick add buttons">Edit</button>
         </div>
         <div id="quick-add-grid" class="quick-grid"></div>
       </article>
+
+      <article class="card">
+        <h3 class="card__title">Your streak calendar</h3>
+        <div id="streak-calendar" class="streak-heatmap" aria-label="Streak calendar"></div>
+        <p id="streak-calendar-meta" class="hint"></p>
+      </article>
     </section>
 
-    <section id="tab-log" class="bento-grid tab-panel hidden" data-tab-panel="log">
-      <article class="bento">
+    <section id="tab-log" class="tab-panel tab-content hidden" data-tab-panel="log">
+      <div class="log-toolbar card">
         <div class="row-between">
-          <p class="label">Transaction log</p>
-          <button id="open-add-transaction" class="primary-btn" type="button"><i class="fa-solid fa-plus"></i> New</button>
+          <span class="input-label" style="margin:0">Transaction log</span>
+          <button type="button" id="open-add-transaction" class="btn-primary btn-sm log-add-desktop" aria-label="Add transaction">Add Transaction</button>
         </div>
-        <input id="search-query" class="text-input mt8" placeholder="Search label, category, note...">
-        <div class="chips mt8" id="time-filter-chips">
+        <input id="search-query" type="search" class="text-input" placeholder="Search label, category, note..." aria-label="Search transactions">
+        <div class="chips-row" id="time-filter-chips">
           <button class="chip chip--active" data-range="all" type="button">All</button>
           <button class="chip" data-range="today" type="button">Today</button>
           <button class="chip" data-range="week" type="button">This Week</button>
           <button class="chip" data-range="month" type="button">This Month</button>
         </div>
-        <div class="row mt8">
-          <select id="filter-category" class="text-input"></select>
-          <input id="filter-month" type="month" class="text-input">
+        <div class="chips-row chips-row--cats" id="category-filter-chips"></div>
+        <div class="row log-filters-extra">
+          <label class="sr-only" for="filter-month">Month</label>
+          <input id="filter-month" type="month" class="text-input" aria-label="Filter by month">
         </div>
-      </article>
-      <article class="bento tile-history">
-        <div class="row-between">
-          <p class="label">Transactions</p>
-          <p id="filtered-total" class="money-negative">-$0.00</p>
-        </div>
-        <ul id="filtered-transaction-list" class="history-list mt8"></ul>
-      </article>
-      <article class="bento">
-        <div class="row-between">
-          <p class="label">Shared expenses</p>
-          <p id="shared-balance" class="hint">$0.00 net</p>
-        </div>
-        <ul id="shared-expense-list" class="history-list mt8"></ul>
-      </article>
+      </div>
+      <div class="log-summary card row-between">
+        <span>Total</span>
+        <span id="filtered-total" class="money-amount font-space">$0.00</span>
+      </div>
+      <ul id="filtered-transaction-list" class="tx-log-list"></ul>
+
+      <details class="card shared-exp-details" id="shared-exp-section">
+        <summary>Shared expenses <span id="shared-exp-summary-count" class="hint"></span></summary>
+        <p id="shared-balance" class="hint"></p>
+        <ul id="shared-expense-list" class="tx-log-list"></ul>
+      </details>
+
+      <button type="button" id="fab-add-tx" class="fab-add" aria-label="Add transaction">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </section>
 
-    <section id="tab-plan" class="bento-grid tab-panel hidden" data-tab-panel="plan">
-      <article class="bento">
-        <p class="label">Budget mode</p>
-        <div class="chips mt8">
-          <button id="mode-monthly" class="chip chip--active" type="button">Monthly Mode</button>
-          <button id="mode-semester" class="chip" type="button">Semester Mode</button>
+    <section id="tab-plan" class="tab-panel tab-content hidden" data-tab-panel="plan">
+      <article class="card">
+        <p class="input-label">Budget period</p>
+        <div class="mode-toggle">
+          <button type="button" id="mode-monthly" class="mode-toggle__btn mode-toggle__btn--active">Monthly Mode</button>
+          <button type="button" id="mode-semester" class="mode-toggle__btn">Semester Mode</button>
         </div>
-        <form id="plan-form" class="mt8">
-          <div class="row">
-            <input id="income" type="number" min="0" step="0.01" class="text-input" placeholder="Monthly income">
-            <input id="fixed-expenses" type="number" min="0" step="0.01" class="text-input" placeholder="Fixed expenses">
+        <form id="plan-form" class="stack mt8">
+          <div id="monthly-income-row">
+            <label class="input-label" for="income">Monthly income</label>
+            <input id="income" type="number" min="0" step="0.01" class="text-input" placeholder="0.00" aria-label="Monthly income">
           </div>
-          <div id="semester-fields" class="row mt8 hidden">
-            <input id="semester-lump-sum" type="number" min="0" step="0.01" class="text-input" placeholder="Semester lump sum">
-            <input id="semester-end-date" type="date" class="text-input">
+          <div id="semester-budget-row" class="hidden">
+            <label class="input-label" for="semester-lump-sum">Total budget for this period</label>
+            <input id="semester-lump-sum" type="number" min="0" step="0.01" class="text-input" placeholder="0.00" aria-label="Total budget for period">
           </div>
-          <button type="submit" class="primary-btn mt8">Update Plan</button>
+          <div id="semester-end-row" class="hidden">
+            <label class="input-label" for="semester-end-date">Period end date</label>
+            <input id="semester-end-date" type="date" class="text-input" aria-label="Period end date">
+          </div>
+          <div id="semester-start-row" class="hidden">
+            <label class="input-label" for="semester-start-date">Period start date</label>
+            <input id="semester-start-date" type="date" class="text-input" aria-label="Period start date">
+          </div>
+          <label class="input-label" for="fixed-expenses">Fixed expenses per month</label>
+          <input id="fixed-expenses" type="number" min="0" step="0.01" class="text-input" placeholder="0.00" aria-label="Fixed expenses per month">
+          <div id="semester-summary" class="semester-summary hidden">
+            <p id="semester-daily" class="semester-daily font-space"></p>
+            <p id="semester-meta" class="hint"></p>
+          </div>
+          <button type="submit" class="btn-primary">Update Plan</button>
         </form>
       </article>
     </section>
 
-    <section id="tab-goals" class="bento-grid tab-panel hidden" data-tab-panel="goals">
-      <article class="bento">
-        <div class="row-between">
-          <p class="label">Savings goals</p>
-          <button id="open-goals-editor" class="primary-btn" type="button"><i class="fa-solid fa-plus"></i> New</button>
+    <section id="tab-goals" class="tab-panel tab-content hidden" data-tab-panel="goals">
+      <div id="goals-empty" class="empty-host"></div>
+      <ul id="goals-list" class="goals-list"></ul>
+      <button type="button" id="open-goals-editor" class="btn-primary goals-fab-desktop" aria-label="New savings goal">+ New goal</button>
+    </section>
+
+    <section id="tab-insights" class="tab-panel tab-content hidden" data-tab-panel="insights">
+      <div id="insights-empty" class="empty-host"></div>
+      <article id="insights-content" class="insights-stack hidden">
+        <div class="card insights-header">
+          <div class="insights-tri">
+            <div><span class="insights-tri__lbl">Earned</span><strong id="ins-earned" class="font-space insights-money insights-money--accent">$0</strong></div>
+            <div><span class="insights-tri__lbl">Spent</span><strong id="ins-spent" class="font-space insights-money insights-money--danger">$0</strong></div>
+            <div><span class="insights-tri__lbl">Saved</span><strong id="ins-saved" class="font-space insights-money">$0</strong></div>
+          </div>
+          <div id="monthly-segments" class="segments-bar" role="img" aria-label="Monthly split"></div>
         </div>
-        <ul id="goals-list" class="goals-list mt8"></ul>
+        <article class="card">
+          <h3 class="card__title">Daily spending — last 30 days</h3>
+          <svg id="trend-svg" class="trend-svg" viewBox="0 0 360 200" preserveAspectRatio="none" aria-label="30 day spending trend"></svg>
+        </article>
+        <article class="card">
+          <h3 class="card__title">Where your money goes</h3>
+          <ul id="category-breakdown" class="category-rank-list"></ul>
+        </article>
+        <article id="mom-card" class="card hidden">
+          <h3 class="card__title">vs last month</h3>
+          <div id="mom-body"></div>
+        </article>
+        <article class="card">
+          <h3 class="card__title">Smart insights</h3>
+          <div id="smart-insights" class="insight-cards"></div>
+        </article>
       </article>
     </section>
-
-    <section id="tab-insights" class="bento-grid tab-panel hidden" data-tab-panel="insights">
-      <article class="bento"><p class="label">Monthly summary</p><div id="monthly-segments" class="segments mt8"></div></article>
-      <article class="bento"><p class="label">Spending trend (30 days)</p><canvas id="trend-chart" width="600" height="220"></canvas></article>
-      <article class="bento"><p class="label">Category breakdown</p><ul id="category-breakdown" class="breakdown-list mt8"></ul></article>
-      <article class="bento"><p class="label">Smart insights</p><ul id="smart-insights" class="breakdown-list mt8"></ul></article>
-    </section>
   </main>
-  <nav class="mobile-nav" aria-label="Primary">
-    <button class="tabbar-btn tabbar-btn--active" data-tab="home" type="button" aria-current="page"><i class="fa-solid fa-house"></i><span>Home</span></button>
-    <button class="tabbar-btn" data-tab="log" type="button"><i class="fa-solid fa-receipt"></i><span>Log</span></button>
-    <button class="tabbar-btn" data-tab="plan" type="button"><i class="fa-solid fa-list-check"></i><span>Plan</span></button>
-    <button class="tabbar-btn" data-tab="goals" type="button"><i class="fa-solid fa-bullseye"></i><span>Goals</span></button>
-    <button class="tabbar-btn" data-tab="insights" type="button"><i class="fa-solid fa-chart-line"></i><span>Insights</span></button>
+
+  <nav class="mobile-nav" aria-label="Primary navigation">
+    <button class="mob-tab mob-tab--active" data-tab="home" type="button" aria-current="page">
+      <svg class="mob-tab__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      <span class="mob-tab__lbl">Home</span>
+      <span class="mob-tab__dot" aria-hidden="true"></span>
+    </button>
+    <button class="mob-tab" data-tab="log" type="button">
+      <svg class="mob-tab__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span class="mob-tab__lbl">Log</span>
+      <span class="mob-tab__dot" aria-hidden="true"></span>
+    </button>
+    <button class="mob-tab" data-tab="plan" type="button">
+      <svg class="mob-tab__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="mob-tab__lbl">Plan</span>
+      <span class="mob-tab__dot" aria-hidden="true"></span>
+    </button>
+    <button class="mob-tab" data-tab="goals" type="button">
+      <svg class="mob-tab__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      <span class="mob-tab__lbl">Goals</span>
+      <span class="mob-tab__dot" aria-hidden="true"></span>
+    </button>
+    <button class="mob-tab" data-tab="insights" type="button">
+      <svg class="mob-tab__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-7"/></svg>
+      <span class="mob-tab__lbl">Insights</span>
+      <span class="mob-tab__dot" aria-hidden="true"></span>
+    </button>
   </nav>
 
+  <!-- Auth modal -->
+  <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="modal-card modal-card--narrow auth-modal-card">
+      <div class="auth-modal__owl"><svg width="60" height="60" aria-hidden="true"><use href="#warden-owl"/></svg></div>
+      <h2 id="auth-title" class="modal-title">Sync with Google</h2>
+      <p class="modal-sub">Sign in once with Google — new or returning, your budget stays with you. We keep you signed in on this browser until you sign out.</p>
+      <div id="auth-form-block">
+        <p id="auth-error" class="form-error hidden" role="alert"></p>
+        <button type="button" id="auth-google" class="btn-google" aria-label="Continue with Google">
+          <svg class="btn-google__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span>Continue with Google</span>
+        </button>
+        <p id="auth-google-hint" class="auth-foot">First visit creates your account automatically. No separate sign-up step.</p>
+        <button type="button" id="auth-skip" class="btn-ghost btn-block">Continue without account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
   <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-    <div class="modal-card">
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="settings-title" class="text-lg font-bold">Settings</h2>
-        <button id="close-settings" class="icon-btn" aria-label="Close settings">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+    <div class="modal-card modal-card--scroll">
+      <div class="modal-head">
+        <h2 id="settings-title" class="modal-title">Settings</h2>
+        <button id="close-settings" class="icon-btn" type="button" aria-label="Close settings">×</button>
       </div>
 
-      <div class="space-y-4">
-        <div>
-          <label for="currency-select" class="input-label">Currency</label>
-          <select id="currency-select" class="text-input mt-1"></select>
-        </div>
-        <div>
-          <label class="option-row"><input id="daily-reminder-toggle" type="checkbox"><span>Daily Reminder</span></label>
-          <input id="daily-reminder-time" type="time" class="text-input mt-2">
-        </div>
-        <div>
-          <p class="input-label mb-2">Unspent daily behavior</p>
-          <label class="option-row">
-            <input type="radio" name="rollover-mode" value="next-day">
-            <span>Add to next day's limit</span>
-          </label>
-          <label class="option-row mt-2">
-            <input type="radio" name="rollover-mode" value="savings-goal">
-            <span>Move to savings goal</span>
-          </label>
-        </div>
+      <section class="settings-section">
+        <h3 class="settings-h">Account</h3>
+        <p id="settings-auth-status" class="settings-p"></p>
+        <p id="settings-sync-time" class="hint"></p>
+        <button type="button" id="settings-sign-in" class="btn-primary btn-block">Sign in with Google</button>
+        <button type="button" id="settings-log-out" class="btn-ghost btn-block hidden">Log out</button>
+      </section>
 
-        <div id="savings-goal-wrapper">
-          <label for="savings-goal-name" class="input-label">Savings goal</label>
-          <input id="savings-goal-name" type="text" maxlength="60" class="text-input mt-1" placeholder="New laptop">
-          <div class="mt-2 text-sm text-zinc-400">
-            Saved so far: <span id="savings-total" class="text-mint font-semibold">$0.00</span>
-          </div>
+      <section class="settings-section">
+        <h3 class="settings-h">Budget</h3>
+        <button type="button" id="settings-goto-plan" class="btn-ghost btn-block">Open Plan tab</button>
+        <label class="input-label" for="currency-select">Currency</label>
+        <select id="currency-select" class="text-input" aria-label="Currency"></select>
+        <p class="input-label mt8">Unspent daily budget</p>
+        <label class="option-row"><input type="radio" name="rollover-mode" value="next-day" aria-label="Add to next day"> <span>Add to next day's limit</span></label>
+        <label class="option-row"><input type="radio" name="rollover-mode" value="savings-goal" aria-label="Move to savings goal"> <span>Move to savings goal</span></label>
+        <div id="savings-goal-wrapper" class="mt8">
+          <label class="input-label" for="savings-goal-name">Savings goal name</label>
+          <input id="savings-goal-name" type="text" class="text-input" maxlength="60" aria-label="Savings goal name">
+          <p class="hint">Saved so far: <span id="savings-total" class="font-space">$0</span></p>
         </div>
+      </section>
 
-        <button id="reset-data" class="danger-btn w-full">
-          <i class="fa-solid fa-trash mr-2"></i>Clear All Data
-        </button>
-        <button id="open-data-modal" class="subtle-btn w-full" type="button">Backups & Import/Export</button>
+      <section class="settings-section">
+        <h3 class="settings-h">Appearance</h3>
+        <button type="button" id="settings-theme-toggle" class="btn-ghost btn-block" aria-label="Toggle theme">Toggle light / dark</button>
+        <p class="hint settings-disabled">Accent color — coming soon</p>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-h">Gamification</h3>
+        <div id="settings-rank-block"></div>
+        <div id="settings-streak-calendar" class="streak-heatmap streak-heatmap--settings"></div>
+        <p id="settings-streak-meta" class="hint"></p>
+        <div id="badges-grid" class="badges-grid"></div>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-h">Data</h3>
+        <label class="option-row"><input type="checkbox" id="backup-reminder-toggle" aria-label="Backup reminder every 30 days"> <span>Remind me to back up every 30 days</span></label>
+        <div class="mt8">
+          <label class="option-row"><input type="checkbox" id="daily-reminder-toggle" aria-label="Daily reminder"> <span>Daily reminder</span></label>
+          <input id="daily-reminder-time" type="time" class="text-input mt8" aria-label="Reminder time">
+        </div>
+        <button type="button" id="open-data-modal" class="btn-ghost btn-block">Backups &amp; Import/Export</button>
         <p class="hint">Last backup: <span id="last-backup-text">Never</span></p>
-      </div>
+      </section>
+
+      <section class="settings-section settings-danger">
+        <h3 class="settings-h">Danger zone</h3>
+        <button type="button" id="reset-data" class="btn-danger-ghost btn-block">Clear all data</button>
+        <div id="clear-confirm" class="hidden mt8">
+          <label class="input-label" for="clear-confirm-input">Type DELETE to confirm</label>
+          <input id="clear-confirm-input" type="text" class="text-input" autocomplete="off" aria-label="Type DELETE to confirm">
+          <button type="button" id="clear-confirm-btn" class="btn-danger btn-block mt8">Erase everything</button>
+        </div>
+      </section>
     </div>
   </div>
 
   <div id="quick-add-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
     <div class="modal-card">
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="quick-add-title" class="text-lg font-bold">Edit Quick Add Buttons</h2>
-        <button id="close-quick-adds" class="icon-btn" aria-label="Close quick add editor">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+      <div class="modal-head">
+        <h2 id="quick-add-title" class="modal-title">Edit Quick Add Buttons</h2>
+        <button id="close-quick-adds" class="icon-btn" type="button" aria-label="Close">×</button>
       </div>
-      <p class="text-sm text-zinc-400 mb-2">Set emoji, name, and amount for each one-tap button.</p>
       <form id="quick-add-form">
-        <div id="quick-add-editor-list" class="space-y-2"></div>
-        <button type="submit" class="primary-btn w-full mt-4">Save Quick Add Buttons</button>
+        <div id="quick-add-editor-list" class="stack"></div>
+        <button type="submit" class="btn-primary btn-block mt8">Save</button>
       </form>
     </div>
   </div>
 
   <div id="add-transaction-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="add-transaction-title">
     <div class="modal-card">
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="add-transaction-title" class="text-lg font-bold">Add Transaction</h2>
-        <button id="close-add-transaction" class="icon-btn" aria-label="Close add transaction">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+      <div class="modal-head">
+        <h2 id="add-transaction-title" class="modal-title">Add Transaction</h2>
+        <button id="close-add-transaction" class="icon-btn" type="button" aria-label="Close">×</button>
       </div>
-      <form id="add-transaction-form" class="space-y-3">
-        <div class="grid grid-cols-3 gap-2">
+      <form id="add-transaction-form" class="stack">
+        <input type="hidden" id="tx-edit-id" value="">
+        <div class="row">
           <input id="tx-emoji" class="text-input" maxlength="4" placeholder="💸" aria-label="Emoji">
-          <input id="tx-amount" class="text-input col-span-2" type="number" min="0" step="0.01" placeholder="Amount" aria-label="Amount">
+          <input id="tx-amount" class="text-input" type="number" min="0" step="0.01" placeholder="Amount" aria-label="Amount">
         </div>
+        <label class="input-label" for="tx-type">Type</label>
+        <select id="tx-type" class="text-input" aria-label="Transaction type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
         <input id="tx-label" class="text-input" maxlength="40" placeholder="What was it?" aria-label="Label">
         <select id="tx-category" class="text-input" aria-label="Category"></select>
         <input id="tx-note" class="text-input" maxlength="80" placeholder="Optional note" aria-label="Note">
-        <label class="option-row"><input id="tx-split-toggle" type="checkbox"><span>Split this expense</span></label>
-        <div id="tx-split-fields" class="row hidden">
-          <input id="tx-split-count" type="number" min="2" max="6" class="text-input" placeholder="People (2-6)">
-          <input id="tx-split-names" class="text-input" placeholder="Names (optional)">
+        <label class="option-row">
+          <input id="tx-split-toggle" type="checkbox" aria-label="Split with others">
+          <span>Split with others</span>
+        </label>
+        <div id="tx-split-fields" class="stack hidden">
+          <label class="input-label" for="tx-split-count">How many people splitting?</label>
+          <input id="tx-split-count" type="number" min="2" max="6" value="2" class="text-input" aria-label="Number of people">
+          <input id="tx-split-names" class="text-input" placeholder="Names (optional, comma-separated)" aria-label="Split names">
         </div>
         <input id="tx-date" class="text-input" type="date" aria-label="Date">
-        <div class="grid grid-cols-2 gap-2">
-          <button id="save-tx" type="submit" class="primary-btn w-full">Save</button>
-          <button id="cancel-tx" type="button" class="subtle-btn w-full">Cancel</button>
+        <div class="row">
+          <button id="save-tx" type="submit" class="btn-primary flex-1">Save</button>
+          <button id="delete-tx" type="button" class="btn-danger btn-inline hidden flex-1">Delete</button>
         </div>
+        <button id="cancel-tx" type="button" class="btn-ghost btn-block">Cancel</button>
       </form>
+    </div>
+  </div>
+
+  <div id="goal-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="goal-modal-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="goal-modal-title" class="modal-title">New goal</h2>
+        <button type="button" id="close-goal-modal" class="icon-btn" aria-label="Close">×</button>
+      </div>
+      <form id="goal-form" class="stack">
+        <input type="hidden" id="goal-edit-id" value="">
+        <label class="input-label">Emoji</label>
+        <div id="goal-emoji-grid" class="emoji-grid"></div>
+        <input type="hidden" id="goal-emoji-picked" value="🎯">
+        <label class="input-label" for="goal-name-input">Name</label>
+        <input id="goal-name-input" type="text" class="text-input" maxlength="40" aria-label="Goal name">
+        <label class="input-label" for="goal-type-select">Type</label>
+        <select id="goal-type-select" class="text-input" aria-label="Goal type"></select>
+        <label class="input-label" for="goal-target-input">Target amount</label>
+        <input id="goal-target-input" type="number" min="0" step="0.01" class="text-input" aria-label="Target amount">
+        <label class="input-label" for="goal-deadline">Deadline (optional)</label>
+        <input id="goal-deadline" type="date" class="text-input" aria-label="Deadline">
+        <button type="submit" class="btn-primary btn-block">Save goal</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="goal-celebrate-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="celebrate-title">
+    <div class="modal-card modal-card--narrow celebrate-card">
+      <canvas id="goal-confetti-canvas" class="celebrate-canvas"></canvas>
+      <h2 id="celebrate-title" class="modal-title">🎉 Goal Reached!</h2>
+      <p id="celebrate-body" class="settings-p"></p>
+      <button type="button" id="celebrate-close" class="btn-primary btn-block">Awesome</button>
     </div>
   </div>
 
   <div id="data-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="data-title">
     <div class="modal-card">
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="data-title" class="text-lg font-bold">Backups</h2>
-        <button id="close-data" class="icon-btn" aria-label="Close backups">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+      <div class="modal-head">
+        <h2 id="data-title" class="modal-title">Backups</h2>
+        <button id="close-data" class="icon-btn" type="button" aria-label="Close">×</button>
       </div>
-      <div class="space-y-3">
-        <button id="export-json" class="primary-btn w-full" type="button">Export Backup (JSON)</button>
-        <button id="export-csv" class="subtle-btn w-full" type="button">Export Transactions (CSV)</button>
-        <div class="bento" style="padding:0.75rem">
-          <p class="input-label">Import backup (JSON)</p>
-          <input id="import-json" type="file" accept="application/json" class="text-input mt-2">
-          <button id="import-json-btn" class="primary-btn w-full mt-2" type="button">Import</button>
-          <p class="text-xs text-zinc-400 mt-2">Import replaces current data (you can export first).</p>
-        </div>
+      <div class="stack">
+        <button id="export-json" type="button" class="btn-primary btn-block">Export Backup (JSON)</button>
+        <button id="export-csv" type="button" class="btn-ghost btn-block">Export Transactions (CSV)</button>
+        <label class="input-label" for="import-json">Import backup (JSON)</label>
+        <input id="import-json" type="file" accept="application/json" class="text-input">
+        <button id="import-json-btn" type="button" class="btn-primary btn-block">Import</button>
+        <p class="hint">Import replaces current data (export first).</p>
       </div>
     </div>
   </div>
 
-  <div id="onboarding-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-    <div class="modal-card">
-      <div class="onboarding-owl">🦉</div>
-      <h2 id="onboarding-title" class="text-xl font-extrabold">Warden setup</h2>
-      <p id="onboarding-msg" class="hint mt8">Let's guard your money with 3 quick steps.</p>
-      <div id="onboarding-steps"></div>
-      <div class="onboarding-dots"><span class="on-dot on-dot--active"></span><span class="on-dot"></span><span class="on-dot"></span></div>
-      <div class="mt8">
-        <label class="option-row">
-          <input id="dont-show-onboarding" type="checkbox">
-          <span>Don’t show this again</span>
-        </label>
-        <div class="row mt8">
-          <button id="onboarding-next" class="primary-btn w-full" type="button">Next</button>
-          <button id="start-using-app" class="subtle-btn w-full hidden" type="button">Finish</button>
-        </div>
+  <div id="onboarding-modal" class="modal modal--fullscreen hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+    <div class="modal-card modal-card--onboard">
+      <div class="onboarding-owl-wrap"><svg width="60" height="60" aria-hidden="true"><use href="#warden-owl"/></svg></div>
+      <h2 id="onboarding-title" class="modal-title">Let's set up your budget</h2>
+      <div class="onboarding-dots" id="onboarding-dots"></div>
+      <div id="onboarding-steps" class="onboarding-body"></div>
+      <div class="onboarding-actions">
+        <button type="button" id="onboarding-next" class="btn-primary btn-block">Next →</button>
+        <button type="button" id="onboarding-finish" class="btn-primary btn-block hidden">Finish setup →</button>
+        <button type="button" id="onboarding-skip-goal" class="btn-ghost btn-block hidden">Skip for now</button>
       </div>
+    </div>
+  </div>
+
+  <div id="finish-setup-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-card--narrow">
+      <div class="check-anim" aria-hidden="true">✓</div>
+      <p id="finish-setup-text" class="settings-p"></p>
+      <button type="button" id="finish-setup-ok" class="btn-primary btn-block">Let's go</button>
     </div>
   </div>
 
   <template id="quick-add-editor-template">
-    <div class="quick-edit-row">
-      <input type="text" class="text-input quick-emoji" maxlength="4" placeholder="☕">
-      <input type="text" class="text-input quick-label" maxlength="24" placeholder="Coffee">
-      <input type="number" class="text-input quick-amount" min="0" step="0.01" placeholder="5.00">
+    <div class="quick-edit-row row">
+      <input type="text" class="text-input quick-emoji" maxlength="4" placeholder="☕" aria-label="Emoji">
+      <input type="text" class="text-input quick-label flex-1" maxlength="24" placeholder="Label" aria-label="Label">
+      <input type="number" class="text-input quick-amount" min="0" step="0.01" placeholder="0" aria-label="Amount">
     </div>
   </template>
 
-  <script src="app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="supabase.js"></script>
+  <script defer src="app.js"></script>
 </body>
 </html>
