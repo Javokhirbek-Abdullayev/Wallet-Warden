@@ -2198,6 +2198,23 @@ async function updateAuthUI() {
     : "Never synced";
 }
 
+/** Canonical site for OAuth return — must be listed in Supabase → Authentication → URL Configuration → Redirect URLs */
+const WW_SITE_ORIGIN = "https://wallet-warden.one";
+
+/**
+ * Return URL after Google → Supabase must exactly match an allowed Redirect URL.
+ * Using the live origin on production avoids Supabase falling back to Site URL (e.g. localhost:3000).
+ */
+function getOAuthRedirectTo() {
+  const host = window.location.hostname;
+  const path = window.location.pathname || "/";
+  const search = window.location.search || "";
+  if (host === "wallet-warden.one" || host === "www.wallet-warden.one") {
+    return `${WW_SITE_ORIGIN}${path}${search}`;
+  }
+  return window.location.href.replace(/#.*$/, "");
+}
+
 /**
  * Google OAuth — first-time Google users are registered automatically.
  * Session is persisted in localStorage (same device stays signed in until sign-out).
@@ -2218,7 +2235,7 @@ async function loginWithGoogle() {
   }
   if (btn) btn.disabled = true;
   try {
-    const redirectTo = window.location.href.split("#")[0];
+    const redirectTo = getOAuthRedirectTo();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo }
