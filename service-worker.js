@@ -1,4 +1,4 @@
-const CACHE_NAME = "wallet-warden-v3";
+const CACHE_NAME = "wallet-warden-v4";
 const STATIC_ASSETS = ["/", "/index.html", "/style.css", "/app.js", "/manifest.json", "/supabase.js"];
 
 self.addEventListener("install", (e) => {

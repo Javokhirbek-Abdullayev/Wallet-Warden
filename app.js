@@ -2209,18 +2209,20 @@ async function recoverOAuthFromUrl(supabase) {
 async function ensureAuthSessionReady(supabase) {
   if (!supabase) return;
   await recoverOAuthFromUrl(supabase);
-  try {
-    if (typeof supabase.auth.initialize === "function") {
-      await supabase.auth.initialize();
-    }
-  } catch (_) {
-    /* older clients without initialize() */
-  }
   const h = window.location.hash;
   if (h && (h.includes("access_token") || h.includes("error"))) {
     await new Promise((r) => setTimeout(r, 80));
   }
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+
+/** Remove persisted Supabase session if signOut cannot reach the server (local-only sign-out). */
+function clearSupabaseAuthStorage() {
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (/^sb-.+-auth-token$/.test(k)) localStorage.removeItem(k);
+    }
+  } catch (_) {}
 }
 
 function getUserDisplayParts(user) {
@@ -2283,15 +2285,10 @@ async function updateAuthUI() {
   }
   await ensureAuthSessionReady(supabase);
   const {
-    data: { session }
+    data: { session },
+    error: sessionErr
   } = await supabase.auth.getSession();
-  let user = session?.user ?? null;
-  try {
-    const { data: userData, error: guErr } = await supabase.auth.getUser();
-    if (!guErr && userData?.user) user = userData.user;
-  } catch (_) {
-    /* offline — keep session user */
-  }
+  const user = sessionErr ? null : session?.user ?? null;
   if (user) {
     const { email, name, avatar, initials } = getUserDisplayParts(user);
     const shortName = name.length > 20 ? `${name.slice(0, 18)}…` : name;
@@ -2450,10 +2447,20 @@ function bindEvents() {
   $("auth-skip")?.addEventListener("click", () => closeModal($("auth-modal")));
   $("settings-sign-in")?.addEventListener("click", () => openModal($("auth-modal")));
   $("settings-log-out")?.addEventListener("click", async () => {
+    const sb = window.wwSupabaseClient;
+    if (!sb) return;
     try {
-      await window.wwSupabaseClient?.auth.signOut();
-    } catch (_) {}
-    location.reload();
+      const { error } = await sb.auth.signOut({ scope: "local" });
+      if (error) throw error;
+    } catch (_) {
+      clearSupabaseAuthStorage();
+      location.reload();
+      return;
+    }
+    closeModal($("settings-modal"));
+    await updateAuthUI();
+    render();
+    toast("Signed out", "info");
   });
   $("plan-form")?.addEventListener("submit", (e) => {
     e.preventDefault();

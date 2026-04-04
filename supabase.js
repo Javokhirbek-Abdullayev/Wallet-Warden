@@ -14,7 +14,6 @@
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: "implicit",
       storage: typeof window !== "undefined" ? window.localStorage : undefined
     }
   });
@@ -24,10 +23,11 @@
     if (!supabase) return;
     try {
       const {
-        data: { user },
-        error: userErr
-      } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
+        data: { session },
+        error: sessErr
+      } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      const user = session?.user;
       if (!user) return;
       const { error } = await supabase.from("user_data").upsert(
         {
@@ -51,10 +51,11 @@
     if (!supabase) return null;
     try {
       const {
-        data: { user },
-        error: userErr
-      } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
+        data: { session },
+        error: sessErr
+      } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      const user = session?.user;
       if (!user) return null;
       const { data, error } = await supabase.from("user_data").select("data").eq("user_id", user.id).single();
       if (error && error.code !== "PGRST116") throw error;
